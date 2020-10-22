@@ -256,3 +256,176 @@ class NinjaCard extends StatelessWidget {
   }
 }
 ```
+
+# StatefulWidget: 
+
+Lets crete a new StatefulWidget() inside our ninja application
+
+Can use the snippet 'stful'+TAB, and call 'Test'
+
+This will create two different classes
+- One is the 'Test' widget (class) that extends the StatefulWidget() so as the previous for the StatelessWidget(). And instantiate the second class created '_TestState()'
+- This is a state object, that inside it we can define data and also change over time.
+  - When we use the Test() widget in the future it going to return the widget tree that we create inside the _TestState() class.
+
+```dart
+class Test extends StatefulWidget {
+  @override
+  _TestState createState() => _TestState();
+}
+
+class _TestState extends State<Test> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      
+    );
+  }
+}
+```
+
+Now lets turn the StatelessWidget() of our NinjaCard to a StatefulWidget(). (Can delete the new classes that was created)
+
+We can use the shortcut provide by the IDE that convert the widgets.
+
+```dart
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(MaterialApp(
+    home: NinjaCard(),
+  ));
+}
+
+class NinjaCard extends StatefulWidget {
+  @override
+  _NinjaCardState createState() => _NinjaCardState();
+}
+
+class _NinjaCardState extends State<NinjaCard> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        backgroundColor: Colors.grey[900],
+        appBar: AppBar(
+          title: Text('Ninja ID Card'),
+          centerTitle: true,
+          backgroundColor: Colors.grey[850],
+          elevation: 0,
+        ),
+        body: Padding(
+          padding: EdgeInsets.fromLTRB(30, 40, 30, 0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: CircleAvatar(
+                  backgroundImage: AssetImage('assets/BatAvatar.jpg'),
+                  radius: 40,
+                ),
+              ),
+              Divider(
+                height: 60,
+                color: Colors.grey[800],
+              ),
+              Text(
+                'NAME',
+                style: TextStyle(
+                  color: Colors.grey,
+                  letterSpacing: 2,
+                ),
+              ),
+              SizedBox(height: 10),
+              Text(
+                'Visconti',
+                style: TextStyle(
+                  color: Colors.amberAccent[200],
+                  letterSpacing: 2,
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: 30),
+              Text(
+                'CURRENT NINJA LEVEL',
+                style: TextStyle(
+                  color: Colors.grey,
+                  letterSpacing: 2,
+                ),
+              ),
+              SizedBox(height: 10),
+              Text(
+                '8',
+                style: TextStyle(
+                  color: Colors.amberAccent[200],
+                  letterSpacing: 2,
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: 30),
+              Row(
+                children: [
+                  Icon(
+                    Icons.email,
+                    color: Colors.grey[400],
+                  ),
+                  SizedBox(
+                    width: 10,
+                  ),
+                  Text(
+                    'visconti@email.com',
+                    style: TextStyle(
+                      fontSize: 18,
+                      letterSpacing: 1,
+                      color: Colors.grey[400],
+                    ),
+                  )
+                ],
+              ),
+            ],
+          ),
+        ));
+  }
+}
+```
+
+Now lets make some modifications to the code to create some kind of data or state that we want to change over time.
+
+- Lets create the variable 'ninjaLevel' to be used to show the level number inside the widget three
+
+```dart
+class _NinjaCardState extends State<NinjaCard> {
+  int ninjaLevel = 0;
+
+  @override
+  Widget build(BuildContext context) {
+
+    // -------------------
+
+    Text(
+      'CURRENT NINJA LEVEL',
+      style: TextStyle(
+        color: Colors.grey,
+        letterSpacing: 2,
+      ),
+    ),
+    SizedBox(height: 10),
+    Text(
+      '$ninjaLevel',
+      style: TextStyle(
+        color: Colors.amberAccent[200],
+        letterSpacing: 2,
+        fontSize: 28,
+        fontWeight: FontWeight.bold,
+      ),
+    ),
+  }
+}
+```
+
+- Now we can create the 'floatingActionButton' property of the Scaffold() widget and add the little button on the bottom to change the level
+  - We we press the button we are going to increase the level. We cannot do this directly to the variable, we need to call a function call 'setState()' this function takes as argument another function setState(() {})
+  - When this function is call it trigger the 'build' function and rebuild it with the new state.
+
+  
