@@ -396,3 +396,308 @@ Instead of doing this code every time the Flutter has a shortcut to do the same 
 body: Center(
   child: Image.asset('/assets/farm_1.jpg')
 )
+```
+
+# Buttons & Icons
+
+In this part we are going to implement Icons and Buttons and a mix af them.
+
+## Icon:
+
+We now instead of having a image widget in the body of our Scaffold, we are going to use a Icon() widget
+
+- The first property  is the Icon we want to use, accessing the Icons object
+- And we can pass more properties to it
+
+```dart
+body: Center(
+  child: Icon(
+    Icons.airport_shuttle,
+    color: Colors.grey[300],
+    size: 50,
+  ),
+),
+```
+
+## Buttons:
+
+Now lets change our body to receive buttons
+
+- There is some types of different buttons. The first we are going to use is the RaisedButton (kind of elevated in the page, so we have a shadow)
+  - We need to add a onPressed property that are not going to do anything now
+  - Again to nest a widget inside another widget we need the child property
+    - FlatButton is the same but without the shadow
+
+```dart
+body: Center(
+  child: RaisedButton(
+    onPressed: () {},
+    child: Text('Click Me'),
+    color: Colors.amber,
+  ),
+),
+```
+
+- For the onPress property we can print something in the console.
+
+```dart
+body: Center(
+  child: RaisedButton(
+    onPressed: () {
+      print('You Click Me');
+    },
+    child: Text('Click Me'),
+    color: Colors.amber,
+  ),
+),
+```
+
+## Icon inside the Button:
+
+To place a icon in the button we have to access the property icon inside the widget
+
+- We first put the 'RaisedButton.icon()' and that means that we want a icon inside this button
+  - Now we can pass the property icon that takes the widget Icon, and inside we select from the object Icons the icon that we want
+  - Next we need to add another property that is label. This  is the text that seats next to the icon
+
+```dart
+body: Center(
+  child: RaisedButton.icon(
+    onPressed: () {
+      print('You Click');
+    },
+    icon: Icon(
+      Icons.mail,
+      color: Colors.grey,
+    ),
+    label: Text('Mail Me'),
+    color: Colors.amber,
+  ),
+),
+```
+
+## Icon Button:
+
+An Icon that we can press it.
+
+```dart
+body: Center(
+    child: IconButton(
+  onPressed: () {},
+  icon: Icon(Icons.alternate_email),
+  color: Colors.amber,
+  iconSize: 50,
+)),
+```
+
+# Containers & Padding:
+
+Now lets turn our attention to layout
+
+
+## Container
+
+The basic layout in Flutter is the Container() widget, hava a lot of properties to layout them. This is basically a container to other widgets.
+
+- color: That is the background color of this container
+
+```dart
+body: Container(
+  color: Colors.grey[400],
+),
+```
+
+When we create a container and not attaches any child inside, this container takes the whole body. If we made a child as a Text() widget for example, the container is only the size of the widget.
+
+A good thing about the Container widget is that we can add padding and margin to our child inside this container.
+
+- For padding we can't put the value directly inside, we need to use something call  'EdgeInsets' that control space as padding and margin inside Flutter. This object has some properties that we chose to apply the padding
+
+```dart
+body: Container(
+  padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+  color: Colors.grey[400],
+  child: Text('Hello World'),
+),
+```
+
+- Margin is quite the same, but specify the space outside the Container
+
+```dart
+body: Container(
+  padding: EdgeInsets.all(20),
+  margin: EdgeInsets.all(10),
+  color: Colors.grey[400],
+  child: Text('Hello World'),
+),
+```
+
+## Padding:
+
+The Padding widget is useful when we don't need any more properties that the Container widget give us access
+
+```dart
+body: Padding(
+  padding: EdgeInsets.all(20),
+  child: Text('Hello World'),
+),
+```
+
+# Rows:
+
+Until now we use only one Widget inside our body. A Row() widget can contain inside several different widgets.
+
+- Since we can have more than one widget inside this widget, we don't have the child property but instead we have the 'children' property
+
+  - The children property accept a list with the type 'Widget' of the elements. So the children property is a list of widgets
+
+```dart
+body: Row(
+  children: [
+    Text('Hello World'),
+    RaisedButton(
+      onPressed: () {
+        print('Press Button');
+      },
+      color: Colors.amber,
+      child: Text('Button'),
+    ),
+    Container(
+      color: Colors.cyan,
+      padding: EdgeInsets.all(30),
+      child: Text('Inside Container'),
+    ),
+  ],
+),
+``` 
+
+- Now the widgets inside the row appear in the layout all together without any space between. To better separate the widgets we use a property for the Row() widget call 'mainAxisAlignment'
+
+![Main and Cross Axis](../MainAndCrossAxis.png)
+
+- With this property we have access to the 'MainAlignmentAxis' object, that has some properties to set the space between the widget
+
+- We can do the same to the 'crossAxisAlignment' property
+
+```dart
+body: Row(
+  mainAxisAlignment: MainAxisAlignment.spaceAround,
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+    Text('Hello World'),
+    RaisedButton(
+      onPressed: () {
+        print('Press Button');
+      },
+      color: Colors.amber,
+      child: Text('Button'),
+    ),
+    Container(
+      color: Colors.cyan,
+      padding: EdgeInsets.all(30),
+      child: Text('Inside Container'),
+    ),
+  ],
+),
+```
+
+# Columns:
+
+Very similar to the Row() widget, but to place the widget in the children property in a column
+
+```dart
+body: Column(
+  mainAxisAlignment: MainAxisAlignment.end,
+  crossAxisAlignment: CrossAxisAlignment.stretch,
+  children: [
+    Container(
+      padding: EdgeInsets.all(20),
+      color: Colors.cyan,
+      child: Text('One'),
+    ),
+    Container(
+      padding: EdgeInsets.all(30),
+      color: Colors.pinkAccent,
+      child: Text('Two'),
+    ),
+    Container(
+      padding: EdgeInsets.all(40),
+      color: Colors.amber,
+      child: Text('Three'),
+    ),
+  ],
+),
+```
+
+- The cool thing about it is that we can place a Row() inside a Column() and vice-versa.
+  - As include another widgets as well
+
+```dart
+body: Column(
+  mainAxisAlignment: MainAxisAlignment.end,
+  crossAxisAlignment: CrossAxisAlignment.stretch,
+  children: [
+    Container(
+      padding: EdgeInsets.fromLTRB(0, 0, 0, 10),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [Text('This Are Inside the ROW')],
+      ),
+    ),
+    Container(
+      padding: EdgeInsets.all(20),
+      color: Colors.cyan,
+      child: Text('One'),
+    ),
+    Container(
+      padding: EdgeInsets.all(30),
+      color: Colors.pinkAccent,
+      child: Text('Two'),
+    ),
+    Container(
+      padding: EdgeInsets.all(40),
+      color: Colors.amber,
+      child: Text('Three'),
+    ),
+  ],
+),
+```
+
+# Expanded Widgets
+
+This is another layout widget. The Expanded() widget takes over all the space that it is left
+
+- We can add a property to this Expanded() widget call 'flex' that determines how much of the screen each one of the widgets are going to take
+
+```dart
+body: Row(
+  children: [
+    Expanded(flex: 3, child: Image.asset('assets/farm_1.jpg')),
+    Expanded(
+      flex: 1,
+      child: Container(
+        padding: EdgeInsets.all(30),
+        color: Colors.cyan,
+        child: Text('1'),
+      ),
+    ),
+    Expanded(
+      flex: 1,
+      child: Container(
+        padding: EdgeInsets.all(30),
+        color: Colors.pinkAccent,
+        child: Text('2'),
+      ),
+    ),
+    Expanded(
+      flex: 1,
+      child: Container(
+        padding: EdgeInsets.all(30),
+        color: Colors.amber,
+        child: Text('3'),
+      ),
+    ),
+  ],
+),
+```
+
