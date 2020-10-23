@@ -375,3 +375,359 @@ class _QuoteListState extends State<QuoteList> {
 
 # Extracting Widgets:
 
+Creating our on custom Stateless widget to do the same as our function it is doing right now, help us modularized our code. This widget are going to represent the card template that we made.
+
+We can do this by clicking the right click on the mouse in the widget Card() that we want to extract and select extract widget.
+
+The function nwo just return a 'new QuoteCard()', and it put the QuoteCard() in its own class that extends StatelessWidget(). And also create a 'build' method that returns the same card template that we have made. So basically it is taking that template and it is putting in it own widget.
+  - So whenever we want to use this template in the future we just use an instance of this QuoteCard class.
+  - It create a constructor with a super, but we don't need this right now.
+
+```dart
+import 'package:flutter/material.dart';
+import 'quote.dart';
+
+void main() {
+  runApp(MaterialApp(
+    home: QuoteList(),
+  ));
+}
+
+class QuoteList extends StatefulWidget {
+  @override
+  _QuoteListState createState() => _QuoteListState();
+}
+
+class _QuoteListState extends State<QuoteList> {
+  List<Quote> quotes = [
+    Quote(text: 'Quote number 1', author: 'Author 1'),
+    Quote(text: 'Quote number 2', author: 'Author 2'),
+    Quote(text: 'Quote number 3', author: 'Author 3'),
+  ];
+
+  Widget quoteTemplate(quote) {
+    return QuoteCard();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.grey[200],
+      appBar: AppBar(
+        title: Text('Awesome Quotes'),
+        centerTitle: true,
+        backgroundColor: Colors.teal[700],
+      ),
+      body: Column(
+        children: quotes.map((quote) => quoteTemplate(quote)).toList(),
+      ),
+    );
+  }
+}
+
+class QuoteCard extends StatelessWidget {
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: EdgeInsets.fromLTRB(16, 16, 16, 0),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            Text(
+              quote.text,
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.grey[600],
+              ),
+            ),
+            SizedBox(
+              height: 6,
+            ),
+            Text(
+              quote.author,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[800],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+- But now we have a small problem, we are trying to output the 'quote.text' and the 'quote.author' inside the Card() widget. When we instantiate the QuoteCard() by returning it inside the 'quoteTemplate()' function, we are not passing anything, we receive the quote inside the function but we are not passing to the class. So we need to pass that through into the QuoteCard class. But we are going to pass it as a Named Parameter
+
+```dart
+Widget quoteTemplate(quote) {
+  return QuoteCard(quote: quote);
+}
+```
+
+- And set that in a constructor inside our new QuoteCard() widget.
+  - First we are going to create a variable with the typw Quote, that is an object.
+  - The constructor use a Named Parameter (that it was how we passed the parameter to the class inside the quoteTemplate function), so we need to make sure of it.
+
+```dart
+class QuoteCard extends StatelessWidget {
+  Quote quote;
+
+  QuoteCard({ this.quote })
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: EdgeInsets.fromLTRB(16, 16, 16, 0),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            Text(
+              quote.text,
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.grey[600],
+              ),
+            ),
+            SizedBox(
+              height: 6,
+            ),
+            Text(
+              quote.author,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[800],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+- We get some error by doing this, because we trying to use data inside a StatelessWidget. We can use data inside a StatelessWidget, but it is not allow to change over time, so we need to put a 'final' key word in front of our variable (object) and this is saying this is the final value of this variable. 
+
+```dart
+class QuoteCard extends StatelessWidget {
+  final Quote quote;
+
+  QuoteCard({this.quote});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: EdgeInsets.fromLTRB(16, 16, 16, 0),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            Text(
+              quote.text,
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.grey[600],
+              ),
+            ),
+            SizedBox(
+              height: 6,
+            ),
+            Text(
+              quote.author,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[800],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+- The function 'quoteTemplate()' become kind of redundant, we are using it just to return a instance of the QuoteCard, we can do this directly inside the map function on the body.
+
+```dart
+class QuoteList extends StatefulWidget {
+  @override
+  _QuoteListState createState() => _QuoteListState();
+}
+
+class _QuoteListState extends State<QuoteList> {
+  List<Quote> quotes = [
+    Quote(text: 'Quote number 1', author: 'Author 1'),
+    Quote(text: 'Quote number 2', author: 'Author 2'),
+    Quote(text: 'Quote number 3', author: 'Author 3'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.grey[200],
+      appBar: AppBar(
+        title: Text('Awesome Quotes'),
+        centerTitle: true,
+        backgroundColor: Colors.teal[700],
+      ),
+      body: Column(
+        children: quotes.map((quote) => QuoteCard(quote: quote)).toList(),
+      ),
+    );
+  }
+}
+```
+
+- We can put all the new class that we create, the QuoteCard widget, inside its own file 'quote_card.dart'. We need to import the 'quote.dart' because we are using the Quote object and the 'material.dart' because we are using the Flutter material package.
+
+```dart
+import 'package:flutter/material.dart';
+import 'quote.dart';
+
+class QuoteCard extends StatelessWidget {
+  final Quote quote;
+
+  QuoteCard({this.quote});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: EdgeInsets.fromLTRB(16, 16, 16, 0),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            Text(
+              quote.text,
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.grey[600],
+              ),
+            ),
+            SizedBox(
+              height: 6,
+            ),
+            Text(
+              quote.author,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[800],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+- And import the quote_card.dart inside the main.dart
+
+
+# Functions as Parameters:
+
+We going to create a Icon inside of each card that when clicked are going to delete that quote from our data.
+
+- First lets add on a little delete icon inside of each of the card. Inside the quote_card file we are going to add in the bottom of everything first a space and then the Button
+  - Inside the button we need a property 'onPressed' that ultimately its going to be the function that delete the quote. 
+
+
+```dart
+@override
+Widget build(BuildContext context) {
+  return Card(
+    margin: EdgeInsets.fromLTRB(16, 16, 16, 0),
+    child: Padding(
+      padding: const EdgeInsets.all(12.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          Text(
+            quote.text,
+            style: TextStyle(
+              fontSize: 18,
+              color: Colors.grey[600],
+            ),
+          ),
+          SizedBox(
+            height: 6,
+          ),
+          Text(
+            quote.author,
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[800],
+            ),
+          ),
+          SizedBox(
+            height: 8,
+          ),
+          FlatButton.icon(
+            onPressed: () {},
+            icon: Icon(Icons.delete_outline),
+            label: Text('Delete'),
+          )
+        ],
+      ),
+    ),
+  );
+}
+```
+
+- There is a problem, we can't modify the data inside this StatelessWidget(), we can only modify the data where it is define, inside the state object. The way around this is to pass a second argument into the QuoteCard() class.
+
+- So we can define that delete function where the data is defined, we can pass that function to the class, and invoke it inside the QuoteCard() widget, in the button.
+
+- Inside this function we can do setState(() {}) that we pass through another function, and inside it we want to remove the quote from the list of quotes. We can do that using the 'remove' method, passing the quote.
+
+```dart
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    backgroundColor: Colors.grey[200],
+    appBar: AppBar(
+      title: Text('Awesome Quotes'),
+      centerTitle: true,
+      backgroundColor: Colors.teal[700],
+    ),
+    body: Column(
+      children: quotes
+          .map((quote) => QuoteCard(
+              quote: quote,
+              delete: () {
+                setState(() {
+                  quotes.remove(quote);
+                });
+              }))
+          .toList(),
+    ),
+  );
+}
+```
+
+- Now we need to receive this 'delete' property (that is a function) inside our QuoteCard widget
+  - We need to define this property inside the constructor as well as a type Function.
+
+```dart
+class QuoteCard extends StatelessWidget {
+  final Quote quote;
+  final Function delete;
+
+  QuoteCard({this.quote, this.delete});
+
+  // ----------------------
+
+```
+
+- So if we now on 'onPressed' property refers to that function, we going to run the code function that it is in the main.dart file. 
