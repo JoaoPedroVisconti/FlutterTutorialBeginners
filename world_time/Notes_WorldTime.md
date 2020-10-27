@@ -451,3 +451,197 @@ void getData() async {
 ```
 
 - So now we are waiting to each request to finish in order to move on
+
+
+# Flutter Packages (http):
+
+Flutter packages are bundles of code and logic that other developers already written that implement some kind of special functionality in our own apps.
+
+In this part we are going to use the HTTP package, that allow us to handle HTTP request to a third part API.
+
+In the page of Flutter packages we can see how to install this packages by placing the line of code in the pubspec.yaml file. In this case:
+
+'https://pub.dev/packages/http/install'
+
+```yaml
+dependencies:
+  http: ^0.12.2
+```
+
+- Now lets cut the precious code to create the asynchronous function at the choose_location file and place it in the loading file.
+  - Get rid of the code inside the function because we no longer are going to simulate a request, but made a actual request with the HTTP package
+
+```dart
+import 'package:flutter/material.dart';
+
+class Loading extends StatefulWidget {
+  @override
+  _LoadingState createState() => _LoadingState();
+}
+
+class _LoadingState extends State<Loading> {
+  void getData() async {}
+
+  @override
+  void initState() {
+    super.initState();
+    getData();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(body: Text('Loading Screen'));
+  }
+}
+```
+
+- For the API we are going to use the 'https://jsonplaceholder.typicode.com/' that give us some data examples in json format
+
+- But first we need to import the HTTP package that we install
+
+```dart
+import 'package:http/http.dart';
+```
+
+- To use the endpoint from the website above, we just need to use 'get()'
+  - We now are going to store this data in a variable, but we want the request to finish before we store the value, so we are going to use the 'await'
+
+  - We are going to store the value of the request in a **Response** object. This object is given to us by the HTTP module, this content the information about the variable that we are creating with the data from the request.
+    - One of the information is the *body* of the request, so lets printed out.
+
+```dart
+void getData() async {
+  Response response =
+      await get('https://jsonplaceholder.typicode.com/todos/1');
+  print(response.body);
+}
+```
+
+- In order to load the Loading() widget we need to change the *initialRoute* property in the home file.
+
+- When we make a hot restart we see the data that come back from our API in the console.
+
+```json
+{
+  "userId": 1,
+  "id": 1,
+  "title": "delectus aut autem",
+  "completed": false
+}
+```
+
+- This load up like a map, but cannot be used like a map. If we try to get for example the userId by doing:
+
+```dart
+print(response.body.userId)
+```
+
+- It is going to return a error. Because the return is not a object, is a string representation of an object (JSON string). And we need to convert in some kind of format that we can use.
+  - For this we can use a function call json decode
+    - We need to 'import 'dart:convert' to use this function
+
+  - This function return a Map, so we can store in a Map type variable this data
+
+```dart 
+import 'package:flutter/material.dart';
+import 'package:http/http.dart';
+import 'dart:convert';
+
+class Loading extends StatefulWidget {
+  @override
+  _LoadingState createState() => _LoadingState();
+}
+
+class _LoadingState extends State<Loading> {
+  void getData() async {
+    Response response =
+        await get('https://jsonplaceholder.typicode.com/todos/1');
+    Map data = jsonDecode(response.body);
+
+    print(data);
+    print(data['title']);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getData();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(body: Text('Loading Screen'));
+  }
+}
+```
+
+
+# World Time API:
+
+Now that we know hao to use this request lets get data from the World Time API. 'http://worldtimeapi.org/'
+
+The end point that we are going to use to get the time for Lisbon/Portugal is 'http://worldtimeapi.org/api/timezone/Europe/Lisbon'
+
+So we can delete the code for getting the data from the previous API, and change also the name of the function **getData()** to **getTime()**
+
+```dart
+class _LoadingState extends State<Loading> {
+  void getTime() async {}
+
+  @override
+  void initState() {
+    super.initState();
+    getTime();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(body: Text('Loading Screen'));
+  }
+}
+```
+
+- First we are going to make the request
+  - Saving the response in a variable type Response.
+  - Await for the request to complete to save in the variable
+  - And pass to the get() function the end point
+
+```dart
+void getTime() async {
+  Response response =
+      await get('http://worldtimeapi.org/api/timezone/Europe/Lisbon');
+}
+```
+
+- Now lets transform this data in some format that we can use
+
+```dart
+void getTime() async {
+  Response response =
+      await get('http://worldtimeapi.org/api/timezone/Europe/Lisbon');
+
+  Map data = jsonDecode(response.body);
+
+  print(data);
+}
+```
+
+- The next thing that we want to do is get the properties from this data. 
+  - Lets store this properties in a variable, this are string properties so we need a String variable.
+
+```dart
+void getTime() async {
+  // Make the request
+  Response response =
+      await get('http://worldtimeapi.org/api/timezone/Europe/Lisbon');
+
+  Map data = jsonDecode(response.body);
+  // print(data);
+
+  // Get properties from data
+  String datetime = data['datetime'];
+  String offset = data['utc_offset'];
+  print(datetime);
+  print(offset);
+}
+```
