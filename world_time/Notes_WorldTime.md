@@ -1093,3 +1093,117 @@ catch (err) {
 
 # Passing Route Data:
 
+Now when we get back the time from the API is going to be a good time to redirect to the **Home** page.
+
+First of all lets get rid of the print() statements and output to the loading page only a text saying 'Loading'. And we can get rid of the time property inside this page also. (remember to delete also the setState())  
+
+
+- Before when we want to push to another route we stack it on top of the page that we are with the Navigator object and using a method call 'pushNamed'. But now we don't want to keep the loading route underneath.
+
+- Instead we are going to use a method call 'pushReplacementNamed'
+
+```dart
+class Loading extends StatefulWidget {
+  @override
+  _LoadingState createState() => _LoadingState();
+}
+
+class _LoadingState extends State<Loading> {
+  void setupWorldTime() async {
+    WorldTime instance = WorldTime(
+        location: 'Lisbon', flag: 'portugal.png', url: 'Europe/Lisbon');
+    await instance.getTime();
+
+    Navigator.pushReplacementNamed(context, '/home');
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    setupWorldTime();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Padding(
+        padding: EdgeInsets.all(50),
+        child: Text('Loading'),
+      ),
+    );
+  }
+}
+```
+
+- Now inside the Home screen we want to put the data, but unfortunately inside this screen (in the home file) we don't have access to that data. But have a way to send the data from this widget to that new route, or new widget, and that is using a third parameter inside the 'pushReplacementNamed()' method.
+  
+  - This third parameters is a named parameter with key word 'arguments' and it is going to be a Map.
+
+```dart
+Navigator.pushReplacementNamed(context, '/home', arguments: {});
+```
+
+- Inside this Map, is going to be a set of Key Value pairs into the widget or the screen we route to, which is the Home screen.
+
+  - We want to send a fill different properties, the location, flag and time. Because we want to show this on the home screen.
+
+  - When we create a new instance, this has all the properties that we need, so we create a Map with the key and this values from the instance.
+
+```dart
+void setupWorldTime() async {
+  WorldTime instance = WorldTime(
+      location: 'Lisbon', flag: 'portugal.png', url: 'Europe/Lisbon');
+  await instance.getTime();
+
+  Navigator.pushReplacementNamed(context, '/home', arguments: {
+    'location': instance.location,
+    'flag': instance.flag,
+    'time': instance.time,
+  });
+}
+```
+
+- Now we are passing this properties to the next route.
+
+- The first thing we need to do is to declare some variable inside the state object to store this data in. 
+  
+  - Lets made this a Map, because we are passing a map through the route. We call it 'data' and set to an empty Map.
+
+  - Now inside the **build** method is that where we receive the arguments that we pass from the loading file.
+
+  - The way we receive this arguments is by using the **ModalRoute** object then *.of(context)* and we pass in the context (because of this has to be inside the **build()** method). And then we do *.settings* and *.arguments*
+
+    - This is going to be the arguments that we receive from the loading file, so it is going to be a Map of data
+
+    - So now we can update the Map 'data' that we create before.
+
+
+```dart
+class _HomeState extends State<Home> {
+  Map data = {};
+
+  @override
+  Widget build(BuildContext context) {
+    data = ModalRoute.of(context).settings.arguments;
+
+    return Scaffold(
+      backgroundColor: Colors.grey[200],
+      body: SafeArea(
+        child: Column(
+          children: <Widget>[
+            FlatButton.icon(
+              onPressed: () {
+                Navigator.pushNamed(context, '/location');
+              },
+              icon: Icon(Icons.edit_location),
+              label: Text('Edit Location'),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+- Now inside this widget we can access anyone of this properties.
