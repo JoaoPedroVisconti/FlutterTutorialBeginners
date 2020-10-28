@@ -645,3 +645,380 @@ void getTime() async {
   print(offset);
 }
 ```
+
+- The output that we get is:
+
+```json
+  2020-10-28T09:37:31.991564+00:00
+  +00:00
+```
+
+- Now we need some how to convert this in to a date time string (date time object). In Dart we can use the DateTime class to create this object, and we instantiate this making the variable equal to the DateTime().
+  - But what we want to do is actually use a method call 'parse', and pass in the 'datetime' string.
+
+  - So what we are doing is to taking the datetime string and passing in to the 'parse' method on the DateTime() class.
+
+```dart
+class _LoadingState extends State<Loading> {
+void getTime() async {
+  // Make the request
+  Response response =
+      await get('http://worldtimeapi.org/api/timezone/Europe/Lisbon');
+
+  Map data = jsonDecode(response.body);
+  // print(data);
+
+  // Get properties from data
+  String datetime = data['datetime'];
+  String offset = data['utc_offset'];
+  // print(datetime);
+  // print(offset);
+
+  // Create a dateTime object
+  DateTime now = DateTime.parse(datetime);
+  print(now); // The output is:
+              // 2020-10-28 09:44:26.944418Z
+}
+```
+
+- Now we can use a method in this DateTime() object, the instance of it *now*, to add a specify time or duration in this object call *add*.
+  - We need to pass in the Duration() object, that we saw before, to pass in the 'hours' that is the offset string that we get from our server.
+
+  - But we need to remove the first part of this string that content a '+' in it (+00:00). But we can do this using a string method call *substring* and go to position 1 until position 3 and get back from it just (00).
+
+```dart
+String offset = data['utc_offset'].substring(1,3);
+```
+
+- Now we can turn this string into a number and use to add on the current date.
+  - To convert that string into a integer we use the method *parse* on the *int* class
+
+  - The *add* method is not destructible, so we need to set the variable *now* to be the new value added the 'offset'
+
+```dart
+class _LoadingState extends State<Loading> {
+void getTime() async {
+  // Make the request
+  Response response =
+      await get('http://worldtimeapi.org/api/timezone/Europe/Lisbon');
+
+  Map data = jsonDecode(response.body);
+  // print(data);
+
+  // Get properties from data
+  String datetime = data['datetime'];
+  String offset = data['utc_offset'].substring(1, 3);
+  // print(datetime);
+  // print(offset);
+
+  // Create a dateTime object
+  DateTime now = DateTime.parse(datetime);
+  now = now.add(Duration(hours: int.parse(offset)));
+  print(now);
+}
+```
+
+
+# WorldTime Custom Class:
+
+Now we have a lot of logic inside the loading file, to be more organized and reusable, we going to separate this logic in its own file in custom class
+
+- First lets create a new folder call services inside the lib folder. And inside create a new file call 'world_time.dart'
+  - This will be our WorldTime class.
+
+- First lets import the packages that we use
+
+- After that we create the class **WorldTime** 
+
+```dart
+import 'package:http/http.dart';
+import 'dart:convert';
+
+class WorldTime {}
+```
+
+- Inside we first need to declare a fill different properties
+  
+  1. location property: That are going to be the exact location that we show in the UI. We just initialize, don't pass any values, the values are going to be passed in in a constructor.
+
+  2. time property: this is the actual time in that location.
+
+  3. flag property: we want to show a little image of a flag next to the location. So this property is going to be a url to an asset flag icon
+
+  4. url property: we need a url for the API, the part of the url that change when the user select the location.
+
+```dart
+import 'package:http/http.dart';
+import 'dart:convert';
+
+class WorldTime {
+  String location; // Location name for the UI
+  String time; // Time in that location
+  String flag; // URL to an flag icon
+  String url; // URL for the API endpoint
+}
+```
+
+- Now lets bring over the function that we create previously inside the 'loading' file.
+
+- We need to make some changes in the function.
+  - We need to change the url that we make the call to the API, and instead of type the location, pass the *url* string variable that we create.
+  
+  - Now we need to convert to a string that DateTime object that we have saved. And pass into the *time* property that we create before. To convert we are going to use the *toString* method.
+    - We are storing this inside the class itself, in that property
+
+  - But we need to set the other properties also. This properties are going to be passed in to the class once we instantiate it. So we need to create the constructor
+
+    - We are going to use Named Parameters for the constructor
+
+```dart
+class WorldTime {
+  String location; // Location name for the UI
+  String time; // Time in that location
+  String flag; // URL to an flag icon
+  String url; // URL for the API endpoint
+
+  WorldTime({this.location, this.flag, this.url});
+
+  void getTime() async {
+    // Make the request
+    Response response = await get('http://worldtimeapi.org/api/timezone/$url');
+
+    Map data = jsonDecode(response.body);
+    // print(data);
+
+    // Get properties from data
+    String datetime = data['datetime'];
+    String offset = data['utc_offset'].substring(1, 3);
+    // print(datetime);
+    // print(offset);
+
+    // Create a dateTime object
+    DateTime now = DateTime.parse(datetime);
+    now = now.add(Duration(hours: int.parse(offset)));
+
+    // Set the time property
+    time = now.toString();
+  }
+}
+```
+
+- This class are going to be instantiated as for example:
+  - Then we can use the function getTime()
+
+```dart
+WorldTime instance = WorldTime(location: 'London', flag: 'british.png', url: 'Europe/London');
+
+instance.getTime();
+```
+
+- Now we need to import this new class inside the file loading
+
+```dart
+import 'package:world_time/services/world_time.dart';
+```
+
+- Now lets create a new function call 'setupWorldTime()' that are going to create a new instance of that WorldTime() class.
+
+```dart
+class Loading extends StatefulWidget {
+  @override
+  _LoadingState createState() => _LoadingState();
+}
+
+class _LoadingState extends State<Loading> {
+
+  void setupWorldTime() {
+  WorldTime instance =
+      WorldTime(location: 'Lisbon', flag: 'portugal.png', url: 'Europe/Lisbon');
+
+  instance.getTime();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getTime();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(body: Text('Loading Screen'));
+  }
+}
+```
+
+- Now we need to change the initState function to call this new function.
+
+```dart
+class _LoadingState extends State<Loading> {
+
+  void setupWorldTime() {
+  WorldTime instance =
+      WorldTime(location: 'Lisbon', flag: 'portugal.png', url: 'Europe/Lisbon');
+
+  instance.getTime();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    setupWorldTime();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(body: Text('Loading Screen'));
+  }
+}
+``` 
+
+- Now we have access to the time property (this property are inside the WorldTime class). But because the setTime() function is a asynchronous function, we cannot use this property strait away.
+
+- If we do something like 
+
+```dart
+print(instance.time);
+```
+
+- It is going to try to print the time even before we finish the request from our API.
+  
+  - So it will be nice to put a 'await' key word in front of the part that we are calling the getTime() method.
+  
+  - But to use a 'await' key word in front of a custom asynchronous function like getTime() we need to put the *Future* type in front of the function, and surround the 'void' key word with <>.
+    
+    - This are telling dart that the function are going to temporarily return whats is know as a Future.
+
+    - Future is a bit like a promise in JavaScript
+
+    - It means is a placeholder value until the function is complete
+
+    - Is telling that in some point we are going to return 'void' but only when this function is complete.
+
+```dart
+Future<void> getTime() async {
+  // Make the request
+  Response response = await get('http://worldtimeapi.org/api/timezone/$url');
+
+  Map data = jsonDecode(response.body);
+  // print(data);
+
+  // Get properties from data
+  String datetime = data['datetime'];
+  String offset = data['utc_offset'].substring(1, 3);
+  // print(datetime);
+  // print(offset);
+
+  // Create a dateTime object
+  DateTime now = DateTime.parse(datetime);
+  now = now.add(Duration(hours: int.parse(offset)));
+
+  // Set the time property
+  time = now.toString();
+}
+```
+
+- Now inside the loading file we need to transform the setupWorldTime() function in to a 'async' function and use the *await* key word.
+
+```dart
+class Loading extends StatefulWidget {
+  @override
+  _LoadingState createState() => _LoadingState();
+}
+
+class _LoadingState extends State<Loading> {
+  void setupWorldTime() async {
+    WorldTime instance = WorldTime(
+        location: 'Lisbon', flag: 'portugal.png', url: 'Europe/Lisbon');
+
+    await instance.getTime();
+    print(instance.time);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    setupWorldTime();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(body: Text('Loading Screen'));
+  }
+}
+```
+
+- Now what we can do is to output this time in the UI
+
+- Lets create a new String inside the State object and set it a value of 'loading'
+
+- Now instead of output the Text() widget, we are going to output a Padding() widget with the variable that we create.
+
+```dart
+class _LoadingState extends State<Loading> {
+  String time = 'loading';
+
+  void setupWorldTime() async {
+    WorldTime instance = WorldTime(
+        location: 'Lisbon', flag: 'portugal.png', url: 'Europe/Lisbon');
+
+    await instance.getTime();
+    print(instance.time);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    setupWorldTime();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Padding(
+        padding: EdgeInsets.all(50),
+        child: Text(time),
+      ),
+    );
+  }
+}
+```
+
+- So when this widget tree is created is going to show loading, but after the setupWorldTime() function ends, once we get the data back, we are going to use setState() to update that *time* property.
+
+```dart
+class Loading extends StatefulWidget {
+  @override
+  _LoadingState createState() => _LoadingState();
+}
+
+class _LoadingState extends State<Loading> {
+  String time = 'loading';
+
+  void setupWorldTime() async {
+    WorldTime instance = WorldTime(
+        location: 'Lisbon', flag: 'portugal.png', url: 'Europe/Lisbon');
+
+    await instance.getTime();
+    setState(() {
+      time = instance.time;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    setupWorldTime();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Padding(
+        padding: EdgeInsets.all(50),
+        child: Text(time),
+      ),
+    );
+  }
+}
+```
