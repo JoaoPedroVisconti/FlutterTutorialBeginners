@@ -1022,3 +1022,74 @@ class _LoadingState extends State<Loading> {
   }
 }
 ```
+
+
+# Error Handling:
+
+So far our code is running correctly, but if in some point we get an error when we try to collect the data.
+
+To combat this we are going to use a Try and Catch block.
+
+```dart
+try {
+  // Do something
+}
+catch (err) {
+  // Do something else
+}
+```
+
+- So lets put all our code of the getTime() function inside the **try**, because this is what we are trying to do.
+  - And if we catch any error we are going to print it on **catch** 
+
+```dart
+import 'package:http/http.dart';
+import 'dart:convert';
+
+class WorldTime {
+  String location; // Location name for the UI
+  String time; // Time in that location
+  String flag; // URL to an flag icon
+  String url; // URL for the API endpoint
+
+  WorldTime({this.location, this.flag, this.url});
+
+  Future<void> getTime() async {
+    try {
+      // Make the request
+      Response response =
+          await get('http://worldtimeapi.org/api/timezone/$url');
+
+      Map data = jsonDecode(response.body);
+      // print(data);
+
+      // Get properties from data
+      String datetime = data['datetime'];
+      String offset = data['utc_offset'].substring(1, 3);
+      // print(datetime);
+      // print(offset);
+
+      // Create a dateTime object
+      DateTime now = DateTime.parse(datetime);
+      now = now.add(Duration(hours: int.parse(offset)));
+
+      // Set the time property
+      time = now.toString();
+    } catch (err) {
+      print('Caught Error: $err');
+    }
+  }
+}
+```
+
+- But now we are getting a red screen in our app, to avoid this lets set the *time* variable to something inside the catch, so that its going to display in the screen.
+
+```dart
+catch (err) {
+  print('Caught Error: $err');
+  time = 'Could not get the Data';
+}
+```
+
+# Passing Route Data:
+
