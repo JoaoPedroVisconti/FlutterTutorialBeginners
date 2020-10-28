@@ -1207,3 +1207,176 @@ class _HomeState extends State<Home> {
 ```
 
 - Now inside this widget we can access anyone of this properties.
+
+
+# Formatting and Showing Data:
+
+The time that we get is still in a weird format, to format to a better way we are going to use a package call **intl**
+'https://pub.dev/packages/intl'
+
+Have to install it editing the pubspec.yaml file.
+
+We are going to format the date inside the world_time file, where we are making the request.
+
+- We need first to import that package
+
+- Now what we need to do is use a Function that is provide to us by that package call **DateFormat** then use a method call *.jm()* then another method call *.format(now)* where we pass our data that we grab from the API 'now'. (This are going to take place where we where formatting the data to a String)
+
+```dart
+import 'package:http/http.dart';
+import 'dart:convert';
+import 'package:intl/intl.dart';
+
+class WorldTime {
+  String location; // Location name for the UI
+  String time; // Time in that location
+  String flag; // URL to an flag icon
+  String url; // URL for the API endpoint
+
+  WorldTime({this.location, this.flag, this.url});
+
+  Future<void> getTime() async {
+    try {
+      // Make the request
+      Response response =
+          await get('http://worldtimeapi.org/api/timezone/$url');
+
+      Map data = jsonDecode(response.body);
+      // print(data);
+
+      // Get properties from data
+      String datetime = data['datetime'];
+      String offset = data['utc_offset'].substring(1, 3);
+      // print(datetime);
+      // print(offset);
+
+      // Create a dateTime object
+      DateTime now = DateTime.parse(datetime);
+      now = now.add(Duration(hours: int.parse(offset)));
+
+      // Set the time property
+      time = DateFormat.jm().format(now);
+    } catch (err) {
+      print('Caught Error: $err');
+      time = 'Could not get the Data';
+    }
+  }
+}
+```
+
+## Displaying the Data in Home Screen:
+
+Now we have this data inside the Home screen let use it inside the template.
+
+- The **FlatButton** widget is inside a widget **Column** so lets add new widgets to it.
+
+- First lets create some space between by using **SizedBox** widget
+
+- Now we add a **Row** because we are going to have two things next to each other. The little icon of the flag and the location.
+
+  - We are not going to do the Icon from now, just the **text** widget. And style it a little bit.
+
+```dart
+return Scaffold(
+  backgroundColor: Colors.grey[200],
+  body: SafeArea(
+    child: Column(
+      children: <Widget>[
+        FlatButton.icon(
+          onPressed: () {
+            Navigator.pushNamed(context, '/location');
+          },
+          icon: Icon(Icons.edit_location),
+          label: Text('Edit Location'),
+        ),
+        SizedBox(height: 20),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              data['location'],
+              style: TextStyle(
+                fontSize: 28,
+                letterSpacing: 2,
+              ),
+            )
+          ],
+        )
+      ],
+    ),
+  ),
+);
+``` 
+
+- Now lets wrap the **Column** inside the **SafeArea** in a **Padding** widget
+
+- Inside the **Column** we are going to make another space and add a **Text** widget that are going to show the *time* property that it is inside the *data*.
+
+```dart
+class Home extends StatefulWidget {
+  @override
+  _HomeState createState() => _HomeState();
+}
+
+class _HomeState extends State<Home> {
+  Map data = {};
+
+  @override
+  Widget build(BuildContext context) {
+    data = ModalRoute.of(context).settings.arguments;
+
+    // print(data);
+
+    return Scaffold(
+      backgroundColor: Colors.grey[200],
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(0, 120, 0, 0),
+          child: Column(
+            children: <Widget>[
+              FlatButton.icon(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/location');
+                },
+                icon: Icon(Icons.edit_location),
+                label: Text('Edit Location'),
+              ),
+              SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Text(
+                    data['location'],
+                    style: TextStyle(
+                      fontSize: 28,
+                      letterSpacing: 2,
+                    ),
+                  )
+                ],
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              Text(
+                data['time'],
+                style: TextStyle(
+                  fontSize: 66,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+# Loaders / Spinners:
+
+Now let style a little bit the Loading screen. We are going to use a package call 'flutter_spinkit'
+'https://pub.dev/packages/flutter_spinkit'
+
+Install and import inside the loading file.
+
+- Inside the loading file, the **Scaffold** body are going to receive a **Center** widget
