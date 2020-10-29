@@ -1379,4 +1379,197 @@ Now let style a little bit the Loading screen. We are going to use a package cal
 
 Install and import inside the loading file.
 
-- Inside the loading file, the **Scaffold** body are going to receive a **Center** widget
+- Inside the loading file, the **Scaffold** body are going to receive a **Center** widget. 
+
+  - This are going to center our next widget that is the **SpinKitFadingCircle()**
+
+```dart
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+      backgroundColor: Colors.blue[900],
+      body: Center(
+        child: SpinKitFadingCircle(
+          color: Colors.white,
+          size: 80.0,
+        ),
+      ));
+}
+```
+
+
+# Ternary Operators: 
+
+We are going to use the Ternary Operator to show a image in the background of day and night depending on the time.
+
+- First of all lets create another property inside the world_time file that is going to be a Boolean to decide if it is day or night.
+
+```dart
+String location; // Location name for the UI
+String time; // Time in that location
+String flag; // URL to an flag icon
+String url; // URL for the API endpoint
+bool isDaytime; // True or false if is day time or not
+```
+
+- We need a condition to decide if it is day or night, to set the property to *true* or *false*. To do that we can use the Ternary Operator
+
+  - Before convert the time to a String, we verify if the hour is in between 6h and 20h (day time).
+
+  - And set the value of the property **isDaytime** to true if the statement is true and to false otherwise.
+
+```dart
+Future<void> getTime() async {
+  try {
+    // Make the request
+    Response response =
+        await get('http://worldtimeapi.org/api/timezone/$url');
+
+    Map data = jsonDecode(response.body);
+    // print(data);
+
+    // Get properties from data
+    String datetime = data['datetime'];
+    String offset = data['utc_offset'].substring(1, 3);
+    // print(datetime);
+    // print(offset);
+
+    // Create a dateTime object
+    DateTime now = DateTime.parse(datetime);
+    now = now.add(Duration(hours: int.parse(offset)));
+
+    // Set the time property
+    isDaytime = now.hour > 6 && now.hour < 20 ? true : false;
+    time = DateFormat.jm().format(now);
+  } catch (err) {
+    print('Caught Error: $err');
+    time = 'Could not get the Data';
+  }
+}
+```
+
+- Now in the loading file we have to pass this new property to the home file, as it was done to the others.
+
+```dart
+Navigator.pushReplacementNamed(context, '/home', arguments: {
+  'location': instance.location,
+  'flag': instance.flag,
+  'time': instance.time,
+  'isDaytime': instance.isDaytime,
+});
+```
+
+- Download the two pictures, create a assets folder, put them inside and add the assets folder to the pubspec.yaml file.
+
+- Now in the home file we need again to check if the property the we receive is true or false. So lets create another property that are going to receive different String with pass to the images depending on the value of the boolean *isDaytime*.
+
+```dart
+class _HomeState extends State<Home> {
+  Map data = {};
+
+  @override
+  Widget build(BuildContext context) {
+    data = ModalRoute.of(context).settings.arguments;
+
+    // print(data);
+
+    String bgImage = data['isDaytime'] ? 'day.png' : 'night.png';
+
+    // ----------------------------------
+```
+
+- Now lets use a combination of **Container** and **BoxDecoration** widgets.
+
+- Wrap everything below the **SafeArea** with an **Container** and inside it wi going to have a decoration property, and inside this we are going to have a **BoxDecoration**
+
+  - For a image property inside the **BoxDecoration** we use a **DecorationImage**, that allow us to apply a background image to the screen.
+    
+    - This widget get two properties.
+      1. image: that takes the AssetImage('')
+      2. fit: that takes BoxFit.cover (cover the entire screen)
+
+```dart
+return Scaffold(
+  backgroundColor: Colors.grey[200],
+  body: SafeArea(
+    child: Container(
+      decoration: BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('assets/$bgImage'),
+          fit: BoxFit.cover,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(0, 120, 0, 0),
+        
+
+      // --------------
+
+
+);
+```
+
+- Now we where left with a grey little stripe o top of the image, so to cover that up we need to give a background color to the **Scaffold**
+
+- We are going to need another property of type *Color* and assign a color to it depending if is day or night.
+
+```dart
+    String bgImage = data['isDaytime'] ? 'day.png' : 'night.png';
+    Color bgColor = data['isDaytime'] ? Colors.blue : Colors.indigo[700];
+
+    return Scaffold(
+      backgroundColor: bgColor,
+
+    // ----------------------
+
+```
+
+- Lets change the colors of the icon and the text to show a little bit more in this background
+
+```dart
+import 'package:http/http.dart';
+import 'dart:convert';
+import 'package:intl/intl.dart';
+
+class WorldTime {
+  String location; // Location name for the UI
+  String time; // Time in that location
+  String flag; // URL to an flag icon
+  String url; // URL for the API endpoint
+  bool isDaytime; // True or false if is day time or not
+
+  WorldTime({this.location, this.flag, this.url});
+
+  Future<void> getTime() async {
+    try {
+      // Make the request
+      Response response =
+          await get('http://worldtimeapi.org/api/timezone/$url');
+
+      Map data = jsonDecode(response.body);
+      // print(data);
+
+      // Get properties from data
+      String datetime = data['datetime'];
+      String offset = data['utc_offset'].substring(1, 3);
+      // print(datetime);
+      // print(offset);
+
+      // Create a dateTime object
+      DateTime now = DateTime.parse(datetime);
+      now = now.add(Duration(hours: int.parse(offset)));
+
+      // Set the time property
+      isDaytime = now.hour > 6 && now.hour < 19 ? true : false;
+      time = DateFormat.jm().format(now);
+    } catch (err) {
+      print('Caught Error: $err');
+      time = 'Could not get the Data';
+    }
+  }
+}
+```
+
+# List View Builder:
+
+Now we are going to make the layout for the Location screen.
