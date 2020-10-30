@@ -1572,4 +1572,354 @@ class WorldTime {
 
 # List View Builder:
 
-Now we are going to make the layout for the Location screen.
+Now we are going to make the layout for the Location screen. To add the different locations in the Location page we are going to use a List View Builder.
+
+- But first we need data to it, so in the choose_location file we have to create a list of WorldTime instances.
+  
+  - The flag where downloaded from: 'https://github.com/iamshaunjp/flutter-beginners-tutorial/tree/lesson-34/world_time_app'
+
+  - We need to import this world_time file to this current file.
+
+```dart
+class _ChooseLocationState extends State<ChooseLocation> {
+List<WorldTime> locations = [
+  WorldTime(url: 'Europe/London', location: 'London', flag: 'uk.png'),
+  WorldTime(url: 'Europe/Berlin', location: 'Athens', flag: 'greece.png'),
+  WorldTime(url: 'Africa/Cairo', location: 'Cairo', flag: 'egypt.png'),
+  WorldTime(url: 'Africa/Nairobi', location: 'Nairobi', flag: 'kenya.png'),
+  WorldTime(url: 'America/Chicago', location: 'Chicago', flag: 'usa.png'),
+  WorldTime(url: 'America/New_York', location: 'New York', flag: 'usa.png'),
+  WorldTime(url: 'Asia/Seoul', location: 'Seoul', flag: 'south_korea.png'),
+  WorldTime(url: 'Asia/Jakarta', location: 'Jakarta', flag: 'indonesia.png'),
+  WorldTime(url: 'Europe/Lisbon', location: 'Lisbon', flag: 'portugal.png'),
+];
+```
+
+- Now that we have all this list, we can cycle through this list and output a template to each item on that list.
+
+- Teh **ListView.builder** widget allow us to use an inline anonymous function to return a widget template for each item inside this list.
+
+- Lets put this widget inside the body of the **Scaffold**
+
+  - For this widget we need to specify a couple of properties
+
+  1. itemCount: number of item inside the list (we can use the location.length)
+
+  2. itemBuilder: which it self is a function that takes two parameters:
+     
+     1. context object
+     
+     2. index
+
+  - Now we need to return a template to each item inside this list. This is going to be a **Card** template
+
+    - Inside this *Card* we have a **ListTile()**, the documentation is 'https://api.flutter.dev/flutter/material/ListTile-class.html'
+
+    - For this **ListTile** widget we need some properties:
+
+    1. onTap: is a function that is fire when the user taps this card.
+    
+    2. title: the text that are going to show in this list tile. This are going to receive the locations list, accessing the index of that list and going inside to access the location property of it.
+
+    3. leading: this is where the image is going, we are going to use the **CircleAvatar** to place the image
+
+  - Lets add some padding to each card, wrapping the **Card** widget in a **Padding** widget.
+
+
+```dart
+class _ChooseLocationState extends State<ChooseLocation> {
+  List<WorldTime> locations = [
+    WorldTime(url: 'Europe/London', location: 'London', flag: 'uk.png'),
+    WorldTime(url: 'Europe/Berlin', location: 'Athens', flag: 'greece.png'),
+    WorldTime(url: 'Africa/Cairo', location: 'Cairo', flag: 'egypt.png'),
+    WorldTime(url: 'Africa/Nairobi', location: 'Nairobi', flag: 'kenya.png'),
+    WorldTime(url: 'America/Chicago', location: 'Chicago', flag: 'usa.png'),
+    WorldTime(url: 'America/New_York', location: 'New York', flag: 'usa.png'),
+    WorldTime(url: 'Asia/Seoul', location: 'Seoul', flag: 'south_korea.png'),
+    WorldTime(url: 'Asia/Jakarta', location: 'Jakarta', flag: 'indonesia.png'),
+    WorldTime(url: 'Europe/Lisbon', location: 'Lisbon', flag: 'portugal.png'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.grey[200],
+      appBar: AppBar(
+        backgroundColor: Colors.blue[900],
+        title: Text('Choose a Location'),
+        centerTitle: true,
+        elevation: 0,
+      ),
+      body: ListView.builder(
+        itemCount: locations.length,
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 1, horizontal: 4),
+            child: Card(
+              child: ListTile(
+                onTap: () {
+                  print(locations[index].location);
+                },
+                title: Text(locations[index].location),
+                leading: CircleAvatar(
+                  backgroundImage:
+                      AssetImage('assets/${locations[index].flag}'),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+```
+
+
+# Updating the Time:
+
+Now what we need to do is to when the card is tapped, we need to get the data (the time) for that location using the *getTime* method inside the **WorldTime** class. And once we have that time we can reroute back to the Home screen with that data and update the home page with that new data.
+
+- Lets create a new function that call *updateTime()* that we are going to call inside the *onTap* property.
+
+- This function receive the index as argument.
+
+- It is a async function, because we are going to call the *getTime* function inside. And we need to await the request before we can reroute to the Home screen.
+
+  - Inside the function we need to store the instance to what whatever instance WorldTime we wanna use.
+
+  - Now we can call the getTime() method
+    
+    - We use the await to hold on until the request is done.
+
+```dart
+void updateTime(index) async {
+  WorldTime instance = locations[index];
+  await instance.getTime();
+}
+```
+
+- Now what we need is to navigate to the Home screen and pass the instance time data to it.
+
+  - To navigate to the Home screen we want to pop the Location screen off, because it is on top of the Home screen. So we use **Navigator.pop** passing in the 'context' and the data that we want in the home page
+    
+    - This time we pass directly a Map. (because we are pop out the screen). This data is going to be the same as on the Loading page.
+
+```dart
+void updateTime(index) async {
+  WorldTime instance = locations[index];
+  await instance.getTime();
+
+  // Navigate to the Home screen and passing data
+  Navigator.pop(context, {
+    'location': instance.location,
+    'flag': instance.flag,
+    'time': instance.time,
+    'isDaytime': instance.isDaytime,
+  });
+}
+```
+
+- Now that we pass the data to the Home screen, what we need to do is to update the variable 'Map data', to this data that we pass to it.
+
+- We can think of the action of going to another screen, choose a location, getting data, and then pop that screen off and coming back with the data. As a big async task.
+
+- So we can pass the await key word in front of the action that push the Location screen on top of the Home screen.
+
+- Then when we get back we can store what we receive in some kind of variable. We don't really know at this point what we getting back.
+
+  - So we can store in a dynamic variable call 'result'
+
+```dart
+return Scaffold(
+  backgroundColor: bgColor,
+  body: SafeArea(
+    child: Container(
+      decoration: BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('assets/$bgImage'),
+          fit: BoxFit.cover,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(0, 120, 0, 0),
+        child: Column(
+          children: <Widget>[
+            FlatButton.icon(
+              onPressed: () async {
+                dynamic result =
+                    await Navigator.pushNamed(context, '/location');
+              },
+              icon: Icon(
+                Icons.edit_location,
+                color: Colors.grey[300],
+              ),
+              label: Text(
+                'Edit Location',
+                style: TextStyle(
+                  color: Colors.grey[300],
+                ),
+              ),
+            ),
+            SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Text(
+                  data['location'],
+                  style: TextStyle(
+                    fontSize: 28,
+                    letterSpacing: 2,
+                    color: Colors.white,
+                  ),
+                )
+              ],
+            ),
+            SizedBox(
+              height: 20,
+            ),
+            Text(
+              data['time'],
+              style: TextStyle(
+                fontSize: 66,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  ),
+);
+```
+
+- Now that we come back with the data store inside the 'result' variable, we can carry on with some code to this property
+
+- The property 'data' on the state start empty, when we load the Loading screen and get to the Home screen, we populate it with the initial information (an initial time)
+
+  - Now we have to update this state with the new data that we receive from the Location screen.
+
+```dart
+onPressed: () async {
+  dynamic result =
+      await Navigator.pushNamed(context, '/location');
+
+  setState(() {
+    data = {
+      'time': result['time'],
+      'location': result['location'],
+      'isDaytime': result['isDaytime'],
+    };
+  });
+},
+```
+
+- Now when we call **setState** we have a problem, because it call the **build** function again, that override the 'data' variable.
+
+- We can do here is a little check
+
+  - We can check if the data is not empty, if it is, that means that we update the data going to the Location screen and pressing some location. So we return just the 'data'
+
+  - If it is empty that means that we are initializing our app, so we need to return the initial 'data'.
+
+```dart
+import 'package:flutter/material.dart';
+
+class Home extends StatefulWidget {
+  @override
+  _HomeState createState() => _HomeState();
+}
+
+class _HomeState extends State<Home> {
+  Map data = {};
+
+  @override
+  Widget build(BuildContext context) {
+    data = data.isNotEmpty ? data : ModalRoute.of(context).settings.arguments;
+
+    // print(data);
+
+    String bgImage = data['isDaytime'] ? 'day.png' : 'night.png';
+    Color bgColor = data['isDaytime'] ? Colors.blue : Colors.indigo[700];
+
+    return Scaffold(
+      backgroundColor: bgColor,
+      body: SafeArea(
+        child: Container(
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/$bgImage'),
+              fit: BoxFit.cover,
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(0, 120, 0, 0),
+            child: Column(
+              children: <Widget>[
+                FlatButton.icon(
+                  onPressed: () async {
+                    dynamic result =
+                        await Navigator.pushNamed(context, '/location');
+
+                    setState(() {
+                      data = {
+                        'time': result['time'],
+                        'location': result['location'],
+                        'isDaytime': result['isDaytime'],
+                      };
+                    });
+                  },
+                  icon: Icon(
+                    Icons.edit_location,
+                    color: Colors.grey[300],
+                  ),
+                  label: Text(
+                    'Edit Location',
+                    style: TextStyle(
+                      color: Colors.grey[300],
+                    ),
+                  ),
+                ),
+                SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Text(
+                      data['location'],
+                      style: TextStyle(
+                        fontSize: 28,
+                        letterSpacing: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  ],
+                ),
+                SizedBox(
+                  height: 20,
+                ),
+                Text(
+                  data['time'],
+                  style: TextStyle(
+                    fontSize: 66,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+# Correction: 
+
+When we grab only a fill parts of the 'offset' property from the API, we need the first character also, this contains the sign of the offset.
+
+```dart
+String offset = data['utc_offset'].substring(0, 3);
+```
+
